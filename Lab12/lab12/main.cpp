@@ -8,120 +8,127 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "BigInt.hpp"
 #include <set>
 #include "functions.hpp"
+#include "longest.hpp"
 
 using namespace std;
 
 struct RsaEncrypter {
 private:
-    BigInt e, n;
+    ulongest e = 0, n = 0;
 
 public:
-    RsaEncrypter(BigInt e, BigInt n) {
+    RsaEncrypter(ulongest e, ulongest n) {
         this->e = e;
         this->n = n;
     }
     
-    BigInt encrypt(BigInt message) {
+    ulongest encrypt(ulongest message) {
         return pow(message, n, e);
     }
 };
 
 struct RsaDecrypter {
 private:
-    BigInt d, n;
+    ulongest d = 0, n = 0;
     
 public:
-    RsaDecrypter(BigInt d, BigInt n) {
+    RsaDecrypter(ulongest d, ulongest n) {
         this->d = d;
         this->n = n;
     }
     
-    BigInt decrypt(BigInt message) {
+    ulongest decrypt(ulongest message) {
         return pow(message, n, d);
     }
 };
 
 struct ElGamalEncrypter {
 private:
-    BigInt y, g, p;
+    ulongest y = 0, g = 0, p = 0;
     
 public:
-    ElGamalEncrypter(BigInt y, BigInt g, BigInt p) {
+    ElGamalEncrypter(ulongest y, ulongest g, ulongest p) {
         this->y = y;
         this->g = g;
         this->p = p;
     }
     
-    pair<BigInt, BigInt> encrypt(BigInt message) {
-        BigInt k = getEasy(p - 1);
-        return pair<BigInt, BigInt>(pow(g, p, k), (pow(y, p, k) * message) % p);
+    pair<ulongest, ulongest> encrypt(ulongest message) {
+        ulongest k = getEasy(p - 1);
+        return pair<ulongest, ulongest>(pow(g, p, k), (pow(y, p, k) * message) % p);
     }
 };
 
 struct ElGamalDecrypter {
 private:
-    BigInt x, p;
+    ulongest x = 0, p = 0;
     
 public:
-    ElGamalDecrypter(BigInt x, BigInt p) {
+    ElGamalDecrypter(ulongest x, ulongest p) {
         this->x = x;
         this->p = p;
     }
     
-    BigInt decrypt(pair<BigInt, BigInt> message) {
+    ulongest decrypt(pair<ulongest, ulongest> message) {
         return (message.second * pow(message.first, p, p - 1 - x)) % p;
     }
 };
 
-pair<RsaEncrypter, RsaDecrypter> RsaGenerate(BigInt p, BigInt q) {
-    BigInt n = p * q;
-    BigInt nEiler = (p - 1) * (q - 1);
-    BigInt e = getEasy(nEiler);
-    BigInt d = getD(e, nEiler);
+pair<RsaEncrypter, RsaDecrypter> RsaGenerate(ulongest p, ulongest q) {
+    ulongest n = p * q;
+    ulongest nEiler = (p - 1) * (q - 1);
+    ulongest e = getEasy(nEiler);
+    ulongest d = getD(e, nEiler);
 
     return pair<RsaEncrypter, RsaDecrypter>(RsaEncrypter(e, n), RsaDecrypter(d, n));
 }
 
-pair<ElGamalEncrypter, ElGamalDecrypter> ElGamalGenerate(BigInt p) {
-    BigInt g = getG(p);
-    BigInt x = rand() % (p - 1) + 1;
-    BigInt y = pow(g, p, x);
+pair<ElGamalEncrypter, ElGamalDecrypter> ElGamalGenerate(ulongest p) {
+    ulongest g = getG(p);
+    ulongest x = rand() % (p.toInt() - 1) + 1;
+    ulongest y = pow(g, p, x);
 
     return pair<ElGamalEncrypter, ElGamalDecrypter>(ElGamalEncrypter(y, g, p), ElGamalDecrypter(x, p));
 }
 
 void RsaExample() {
-    BigInt p = 5, q = 7;
+    ulongest p = 5, q = 7;
     
     pair<RsaEncrypter, RsaDecrypter> rsa = RsaGenerate(p, q);
     
-    BigInt message = 24;
-    cout << "Message: " << message << endl;
+    cout << "RSA:" << endl;
     
-    BigInt encryptedMessage = rsa.first.encrypt(message);
-    cout << "Encrypted message: " << encryptedMessage << endl;
-    
-    BigInt dectyptedMessage = rsa.second.decrypt(encryptedMessage);
-    cout << "Decrypted message: " << dectyptedMessage << endl;
+    ulongest message = 24;
+    cout << "Message: " << message.toInt() << endl;
+
+    ulongest encryptedMessage = rsa.first.encrypt(message);
+    cout << "Encrypted message: " << encryptedMessage.toInt() << endl;
+
+    ulongest dectyptedMessage = rsa.second.decrypt(encryptedMessage);
+    cout << "Decrypted message: " << dectyptedMessage.toInt() << endl;
+    cout << endl;
+
 }
 
 void ElGamalExample() {
-    BigInt p = 997;
+    ulongest p = 997;
     
     pair<ElGamalEncrypter, ElGamalDecrypter> elGamal = ElGamalGenerate(p);
     
-    BigInt message = 228;
-    cout << "Message: " << message << endl;
+    cout << "ElGamal:" << endl;
 
-    pair<BigInt, BigInt> encryptedMessage = elGamal.first.encrypt(message);
-    cout << "Encrypted message: (" << encryptedMessage.first << ", " << encryptedMessage.second << ")" << endl;
+    ulongest message = 234;
+    cout << "Message: " << message.toInt() << endl;
+
+    pair<ulongest, ulongest> encryptedMessage = elGamal.first.encrypt(message);
+    cout << "Encrypted message: (" << encryptedMessage.first.toInt() << ", " << encryptedMessage.second.toInt() << ")" << endl;
     
-    BigInt decryptedMessage = elGamal.second.decrypt(encryptedMessage);
-    cout << "Decrypted message: " << decryptedMessage << endl;
+    ulongest decryptedMessage = elGamal.second.decrypt(encryptedMessage);
+    cout << "Decrypted message: " << decryptedMessage.toInt() << endl;
 }
+
 int main() {
     RsaExample();
     ElGamalExample();
